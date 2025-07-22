@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+.env
+
+# builds
+dist/
+build/
+
+# logs
+*.log
+
+# system
+.DS_Store
+.vscode/
+.idea/
+
+# test coverage
+coverage/
+
+# others
+*.local
+
+
+.application.properties
+**/application.properties
