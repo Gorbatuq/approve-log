@@ -1,8 +1,10 @@
 package com.approval.service;
 
 import com.approval.dto.DocumentRequest;
+import com.approval.exception.NotFoundException;
 import com.approval.model.AuditLog;
 import com.approval.model.Document;
+import com.approval.model.DocumentStatus;
 import com.approval.model.User;
 import com.approval.repository.AuditLogRepository;
 import com.approval.repository.DocumentRepository;
@@ -23,8 +25,11 @@ public class DocumentService {
         Document doc = new Document();
         doc.setTitle(request.getTitle());
         doc.setContent(request.getContent());
-        doc.setStatus("DRAFT");
+        doc.setStatus(DocumentStatus.DRAFT);
+
+        System.out.println("Creating document: " + request.getTitle());
         doc.setCreatedBy(creator);
+
         Document saved = documentRepository.save(doc);
 
         saveAuditLog(saved, "CREATED", creator);
@@ -38,10 +43,13 @@ public class DocumentService {
 
     public Document approveDocument(Long id, User manager) {
         Document doc = documentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Document not found"));
+                .orElseThrow(() -> new NotFoundException("Document not found"));
 
-        doc.setStatus("APPROVED");
+        doc.setStatus(DocumentStatus.APPROVED);
         doc.setApprovedBy(manager);
+
+        System.out.println("Approving doc id=" + id + " by user=" + manager.getUsername());
+
         doc.setApprovedAt(LocalDateTime.now());
         Document saved = documentRepository.save(doc);
 
@@ -52,9 +60,9 @@ public class DocumentService {
 
     public Document rejectDocument(Long id, User manager) {
         Document doc = documentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Document not found"));
+                .orElseThrow(() -> new NotFoundException("Document not found"));
 
-        doc.setStatus("REJECTED");
+        doc.setStatus(DocumentStatus.REJECTED);
         doc.setApprovedBy(manager);
         doc.setApprovedAt(LocalDateTime.now());
         Document saved = documentRepository.save(doc);

@@ -12,22 +12,42 @@ import java.io.IOException;
 
 @RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
+
     private final JwtTokenProvider jwtTokenProvider;
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/api/auth");
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain)
             throws ServletException, IOException {
+
         String token = resolveToken(request);
+        System.out.println("Filtering: " + request.getServletPath());
+        System.out.println("Token: " + token);
+        System.out.println("Valid: " + jwtTokenProvider.validateToken(token));
+
         if (token != null && jwtTokenProvider.validateToken(token)) {
-            SecurityContextHolder.getContext().setAuthentication(jwtTokenProvider.getAuthentication(token));
+            System.out.println("Token valid");
+            SecurityContextHolder.getContext().setAuthentication(
+                    jwtTokenProvider.getAuthentication(token));
+        } else {
+            System.out.println(" Token invalid or missing");
         }
+
         filterChain.doFilter(request, response);
     }
 
     private String resolveToken(HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
-        return (bearer != null && bearer.startsWith("Bearer ")) ? bearer.substring(7) : null;
+        if (bearer != null && bearer.startsWith("Bearer ")) {
+            return bearer.substring(7);
+        }
+        return null;
     }
 }

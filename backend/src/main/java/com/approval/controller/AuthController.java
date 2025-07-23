@@ -1,5 +1,6 @@
 package com.approval.controller;
 
+import com.approval.model.Role;
 import com.approval.model.User;
 import com.approval.repository.UserRepository;
 import com.approval.security.JwtTokenProvider;
@@ -10,7 +11,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
 import com.approval.dto.AuthRequest;
+import com.approval.dto.UserResponse;
 
 import java.util.Map;
 
@@ -35,9 +38,8 @@ public class AuthController {
 
         return ResponseEntity.ok(Map.of(
                 "token", token,
-                "user", Map.of(
-                        "username", user.getUsername(),
-                        "role", user.getRole())));
+                "user", new UserResponse(user.getUsername(), user.getRole())));
+
     }
 
     @PostMapping("/register")
@@ -48,9 +50,9 @@ public class AuthController {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setRole("USER");
+        user.setRole(Role.USER);
+
         userRepository.save(user);
         return ResponseEntity.ok("User created");
     }
-
 }

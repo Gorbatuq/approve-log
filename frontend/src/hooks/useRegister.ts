@@ -12,6 +12,7 @@ type RegisterResponse = {
 
 const register = async (input: RegisterInput): Promise<RegisterResponse> => {
   const { data } = await api.post('/auth/register', input)
+  console.log(data)
   return data
 }
 

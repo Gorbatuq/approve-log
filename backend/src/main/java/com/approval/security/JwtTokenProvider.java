@@ -1,65 +1,73 @@
 package com.approval.security;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
+import com.approval.config.JwtProperties;
+import com.approval.model.Role;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
 
 @Component
 public class JwtTokenProvider {
-    private final String secretKey = "my-very-secret-key-my-very-secret-key"; // 32+ chars
-    private final long validityInMs = 3600000; // 1h
 
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(
-                Decoders.BASE64.decode(java.util.Base64.getEncoder().encodeToString(secretKey.getBytes())));
+    private final Key signingKey;
+    private final long expiration;
+
+    public JwtTokenProvider(JwtProperties jwtProperties) {
+        String secret = jwtProperties.getSecret();
+        if (secret == null || secret.length() < 32) {
+            throw new IllegalArgumentException("JWT secret must be at least 32 characters");
+        }
+        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        this.expiration = jwtProperties.getExpiration();
     }
 
-    public String createToken(String username, String role) {
-        Claims claims = Jwts.claims().setSubject(username);
-        claims.put("role", role);
-
+    public String createToken(String username, Role role) {
         Date now = new Date();
-        Date validity = new Date(now.getTime() + validityInMs);
+        Date validity = new Date(now.getTime() + expiration);
+
+        Claims claims = Jwts.claims().setSubject(username);
+        claims.put("role", role.name());
 
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(validity)
-                .signWith(getSigningKey())
+                .signWith(signingKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public Authentication getAuthentication(String token) {
         Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+                .setSigningKey(signingKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
 
         String username = claims.getSubject();
-        String role = (String) claims.get("role");
+        Role role = Role.valueOf((String) claims.get("role"));
 
         return new UsernamePasswordAuthenticationToken(
-                username, "", List.of(new SimpleGrantedAuthority(role)));
+                username,
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_" + role.name())));
     }
 
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
+                    .setSigningKey(signingKey)
                     .build()
                     .parseClaimsJws(token);
             return true;
-        } catch (Exception e) {
+        } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }

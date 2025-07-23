@@ -19,7 +19,8 @@ public class Document {
     private String title;
     private String content;
 
-    private String status; // DRAFT, PENDING, APPROVED, REJECTED
+    @Enumerated(EnumType.STRING)
+    private DocumentStatus status; // DRAFT, PENDING, APPROVED, REJECTED
 
     @ManyToOne
     private User createdBy;
