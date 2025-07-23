@@ -7,10 +7,14 @@ import com.approval.model.User;
 import com.approval.service.AuditLogService;
 import com.approval.service.DocumentService;
 import com.approval.service.UserService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
@@ -25,9 +29,10 @@ public class DocumentController {
 
     @PostMapping
     @PreAuthorize("hasRole('USER') or hasRole('MANAGER')")
-    public Document create(@RequestBody DocumentRequest request,
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User springUser) {
-        User user = userService.findByUsername(springUser.getUsername());
+    public Document create(@Valid @RequestBody DocumentRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User user = userService.findByUsername(username);
         return documentService.createDocument(request, user);
     }
 
@@ -39,17 +44,19 @@ public class DocumentController {
 
     @PutMapping("/{id}/approve")
     @PreAuthorize("hasRole('MANAGER')")
-    public Document approve(@PathVariable Long id,
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User springUser) {
-        User user = userService.findByUsername(springUser.getUsername());
+    public Document approve(@Valid @PathVariable Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User user = userService.findByUsername(username);
         return documentService.approveDocument(id, user);
     }
 
     @PutMapping("/{id}/reject")
     @PreAuthorize("hasRole('MANAGER')")
-    public Document reject(@PathVariable Long id,
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User springUser) {
-        User user = userService.findByUsername(springUser.getUsername());
+    public Document reject(@Valid @PathVariable Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User user = userService.findByUsername(username);
         return documentService.rejectDocument(id, user);
     }
 

@@ -8,8 +8,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-// import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-// import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print; 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -24,15 +25,12 @@ class AuthControllerTest {
         .contentType(MediaType.APPLICATION_JSON)
         .content("""
                 {
-                  "username": "Mama",
-                  "password": "1111"
+                  "username": "Lola",
+                  "password": "1234"
                 }
             """))
-        .andExpect(result -> {
-          int status = result.getResponse().getStatus();
-          String body = result.getResponse().getContentAsString();
-          throw new RuntimeException("STATUS: " + status + "\nBODY: " + body);
-        });
-
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.token").exists());
   }
 }
