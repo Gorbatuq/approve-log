@@ -1,23 +1,18 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { LoginPage } from "./pages/LoginPage";
-import { HomePage } from "./pages/HomePage";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { BrowserRouter } from "react-router-dom";
+import { AppRoutes } from "../src/routes/AppRoutes";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute>
-              <HomePage />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+      <AppRoutes />
+      <ToastContainer
+        theme="colored"
+        position="top-center"
+        autoClose={2000}
+        hideProgressBar
+      />
     </BrowserRouter>
   );
 }

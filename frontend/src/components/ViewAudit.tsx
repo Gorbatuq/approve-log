@@ -13,8 +13,10 @@ export const ViewAudit = ({ documentId }: { documentId: string }) => {
       <div className="space-y-1">
         {data.map((log) => (
           <div key={log.id} className="text-sm">
-            <span className="text-gray-400">{log.timestamp}</span> -
-            <span className="ml-2 font-bold">{log.action}</span> by
+            <span className="text-gray-400">
+              {new Date(log.timestamp).toLocaleString()}
+            </span>{" "}
+            -<span className="ml-2 font-bold">{log.action}</span> by
             <span className="ml-1 text-blue-300">{log.user.username}</span>
           </div>
         ))}

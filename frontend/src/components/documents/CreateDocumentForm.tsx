@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 interface CreateDocumentFormProps {
   onCreate: (data: { title: string; content: string }) => void;
@@ -10,7 +11,7 @@ export const CreateDocumentForm = ({ onCreate }: CreateDocumentFormProps) => {
 
   const handleSubmit = () => {
     if (!title.trim() || !content.trim()) {
-      alert("Title and content required");
+      toast.error("Title and content required");
       return;
     }
     onCreate({ title, content });

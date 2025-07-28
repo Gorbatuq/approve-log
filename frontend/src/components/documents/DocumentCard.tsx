@@ -15,7 +15,7 @@ export const DocumentCard = ({
   onReject,
 }: DocumentCardProps) => {
   return (
-    <div key={doc.id} className="p-6 bg-gray-800 rounded-lg shadow">
+    <div className="p-6 bg-gray-800 rounded-lg shadow">
       <h2 className="text-2xl font-semibold mb-2">{doc.title}</h2>
       <p>
         Status: <span className="font-bold">{doc.status}</span>

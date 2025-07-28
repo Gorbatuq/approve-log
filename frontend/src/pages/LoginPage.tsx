@@ -6,8 +6,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 const schema = z.object({
   email: z.string(), // later change for email()
@@ -22,7 +21,7 @@ export const LoginPage = () => {
   const isLoginPending = loginMutation.status === "pending";
 
   const registerMutation = useRegister();
-  const RegisterPending = registerMutation.status === "pending";
+  const isRegisterPending = registerMutation.status === "pending";
 
   const navigate = useNavigate();
 
@@ -101,7 +100,7 @@ export const LoginPage = () => {
           </button>
           <button
             type="button"
-            disabled={isSubmitting || RegisterPending}
+            disabled={isSubmitting || isRegisterPending}
             onClick={handleSubmit(onRegister)}
             className="w-full bg-gray-300 text-gray-800 py-2 rounded-lg hover:bg-gray-400 transition"
           >
@@ -109,12 +108,6 @@ export const LoginPage = () => {
           </button>
         </form>
       </div>
-      <ToastContainer
-        theme="colored"
-        position="top-center"
-        autoClose={2000}
-        hideProgressBar={true}
-      />
     </div>
   );
 };

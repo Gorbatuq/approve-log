@@ -7,3 +7,8 @@ export type Document = {
   approvedBy?: { username: string }
   approvedAt?: string
 }
+
+export type CreateDocumentInput = {
+  title: string;
+  content: string;
+};
