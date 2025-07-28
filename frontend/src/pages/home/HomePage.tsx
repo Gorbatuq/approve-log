@@ -1,38 +1,43 @@
-import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDocuments } from "../hooks/useDocuments";
-import {
-  useApproveDocument,
-  useRejectDocument,
-} from "../hooks/useDocumentMutations";
-import { useCreateDocument } from "../hooks/useCreateDocument";
-import { useAuthStore } from "../store/useAuthStore";
-import { CreateDocumentForm } from "../components/documents/CreateDocumentForm";
-import { DocumentCard } from "../components/documents/DocumentCard";
-import type { Document } from "../types/Document";
-import type { CreateDocumentInput } from "../types/Document";
+import { useDocuments } from "../../hooks/documents/useDocuments";
+import { useProfile } from "../../hooks/auth/useProfile";
+import { useLogout } from "../../hooks/auth/useLogout";
+import { useApproveDocument } from "../../hooks/documents/useApproveDocument";
+import { useRejectDocument } from "../../hooks/documents/useRejectDocument";
+import { useCreateDocument } from "../../hooks/documents/useCreateDocument";
+
+import { useQueryClient } from "@tanstack/react-query";
+import { CreateDocumentForm } from "../../components/documents/CreateDocumentForm";
+import { DocumentCard } from "../../components/documents/DocumentCard";
+
+import type { Document } from "../../types/Document";
+import type { CreateDocumentInput } from "../../types/Document";
 
 export const HomePage = () => {
   const navigate = useNavigate();
-  const { logout, userRole } = useAuthStore();
-  const isManager = userRole === "MANAGER";
+  const queryClient = useQueryClient();
+
+  const { data: profile } = useProfile();
+  const isManager = profile?.role === "MANAGER";
 
   const { data: documents, isLoading, isError, error } = useDocuments();
   const create = useCreateDocument();
   const approve = useApproveDocument();
   const reject = useRejectDocument();
+  const logout = useLogout();
 
-  const handleCreate = useCallback(
-    (input: CreateDocumentInput) => {
-      create.mutate(input);
-    },
-    [create]
-  );
+  const handleCreate = (input: CreateDocumentInput) => {
+    create.mutate(input);
+  };
 
-  const handleLogout = useCallback(() => {
-    logout();
-    navigate("/login");
-  }, [logout, navigate]);
+  const handleLogout = () => {
+    logout.mutate(undefined, {
+      onSuccess: () => {
+        queryClient.clear();
+        navigate("/login");
+      },
+    });
+  };
 
   if (isLoading) return <p className="text-white">Loading...</p>;
   if (isError || !documents)
@@ -49,10 +54,10 @@ export const HomePage = () => {
         <h1 className="text-3xl font-bold">Documents</h1>
         <span
           className={`text-sm px-3 py-1 rounded-full font-medium ${
-            isManager ? "bg-yellow-600 text-white" : "bg-gray-600 text-white"
+            isManager ? "bg-yellow-600" : "bg-gray-600"
           }`}
         >
-          {userRole}
+          {profile?.role}
         </span>
 
         <button

@@ -1,4 +1,4 @@
-import { useAudit } from "../hooks/useAudit";
+import { useAudit } from "../hooks/documents/useAudit";
 
 export const ViewAudit = ({ documentId }: { documentId: string }) => {
   const { data, isLoading, isError } = useAudit(documentId);

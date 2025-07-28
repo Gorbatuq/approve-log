@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { useLogin } from "../hooks/useLogin";
-import { useRegister } from "../hooks/useRegister";
-import { useAuthStore } from "../store/useAuthStore";
+import { useLogin } from "../hooks/auth/useLogin";
+import { useRegister } from "../hooks/auth/useRegister";
+
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { toast } from "react-toastify";
 
@@ -16,7 +17,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export const LoginPage = () => {
-  const { login: setLogin } = useAuthStore();
+  const queryClient = useQueryClient();
   const loginMutation = useLogin();
   const isLoginPending = loginMutation.status === "pending";
 
@@ -38,12 +39,14 @@ export const LoginPage = () => {
     loginMutation.mutate(
       { username: data.email, password: data.password },
       {
-        onSuccess: ({ token, user }) => {
-          localStorage.setItem("token", token);
-          setLogin(user.role);
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["profile"] });
           navigate("/home");
         },
-        onError: () => toast.error("Invalid credentials"),
+        onError: (error) => {
+          console.error("Invalid credentials", error);
+          toast.error("Invalid credentials");
+        },
       }
     );
   };

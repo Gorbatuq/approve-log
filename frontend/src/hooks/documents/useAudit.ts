@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { api } from '../api/api'
-import type { AuditLog } from '../types/AuditLog'
+import { api } from '../../api/api'
+import type { AuditLog } from '../../types/AuditLog'
 
 export function useAudit(documentId: string) {
   return useQuery<AuditLog[]>({
@@ -8,6 +8,6 @@ export function useAudit(documentId: string) {
     queryFn: async () => {
       const { data } = await api.get(`/documents/${documentId}/audit`)
       return data
-    }
+    },
   })
 }

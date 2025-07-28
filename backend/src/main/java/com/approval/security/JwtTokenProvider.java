@@ -71,4 +71,19 @@ public class JwtTokenProvider {
             return false;
         }
     }
+
+    public String getUsername(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(signingKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.getSubject();
+    }
+
+    public long getExpiration() {
+        return expiration;
+    }
+
 }

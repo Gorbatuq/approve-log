@@ -10,6 +10,9 @@ import com.approval.security.JwtTokenProvider;
 import com.approval.service.AuthLogService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,7 +36,7 @@ public class AuthController {
 
     // ------------------------- LOGIN ----------------------------------
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody AuthRequest requestBody) {
+    public ResponseEntity<?> login(@Valid @RequestBody AuthRequest requestBody, HttpServletResponse response) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                     requestBody.getUsername(), requestBody.getPassword()));
@@ -45,9 +48,20 @@ public class AuthController {
 
             authLogService.log(user.getUsername(), true, request);
 
-            return ResponseEntity.ok(Map.of(
-                    "token", token,
-                    "user", new UserResponse(user.getUsername(), user.getRole())));
+            // Створення cookie
+            Cookie cookie = new Cookie("token", token);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(true); // якщо HTTPS, інакше false
+            cookie.setPath("/");
+            cookie.setMaxAge((int) (jwtTokenProvider.getExpiration() / 1000));
+            cookie.setAttribute("SameSite", "Strict");
+
+            // Додати cookie у відповідь
+            response.addCookie(cookie);
+
+            // Повернути тільки юзера, токен не потрібен у JSON
+            return ResponseEntity.ok(new UserResponse(user.getUsername(), user.getRole()));
+
         } catch (Exception ex) {
 
             authLogService.log(requestBody.getUsername(), false, request);
@@ -72,6 +86,46 @@ public class AuthController {
         user.setRole(Role.USER);
 
         userRepository.save(user);
-        return ResponseEntity.ok("User created");
+        return ResponseEntity.ok(Map.of("message", "User created"));
+
     }
+
+    // ------------------------- LOGOUT --------------------------------
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("token", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        cookie.setAttribute("SameSite", "Strict");
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok("Logged out");
+    }
+
+    // ------------------------- PROFILE --------------------------------
+    @GetMapping("/profile")
+    public ResponseEntity<?> profile(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return ResponseEntity.status(401).body("No cookies");
+        }
+        String token = null;
+        for (Cookie cookie : cookies) {
+            if ("token".equals(cookie.getName())) {
+                token = cookie.getValue();
+                break;
+            }
+        }
+        if (token == null || !jwtTokenProvider.validateToken(token)) {
+            return ResponseEntity.status(401).body("Invalid or missing token");
+        }
+        String username = jwtTokenProvider.getUsername(token);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        return ResponseEntity.ok(new UserResponse(user.getUsername(), user.getRole()));
+    }
+
 }
