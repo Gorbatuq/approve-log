@@ -17,16 +17,25 @@ public class Document {
     private Long id;
 
     private String title;
+
     private String content;
 
     @Enumerated(EnumType.STRING)
     private DocumentStatus status; // DRAFT, PENDING, APPROVED, REJECTED
 
     @ManyToOne
+    @JoinColumn(name = "created_by_id", nullable = false)
     private User createdBy;
 
     @ManyToOne
+    @JoinColumn(name = "approved_by_id")
     private User approvedBy;
 
     private LocalDateTime approvedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "rejected_by_id")
+    private User rejectedBy;
+
+    private LocalDateTime rejectedAt;
 }

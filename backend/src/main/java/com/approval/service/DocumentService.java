@@ -47,14 +47,14 @@ public class DocumentService {
 
         doc.setStatus(DocumentStatus.APPROVED);
         doc.setApprovedBy(manager);
-
-        System.out.println("Approving doc id=" + id + " by user=" + manager.getUsername());
-
         doc.setApprovedAt(LocalDateTime.now());
+
+        // clear rejected
+        doc.setRejectedBy(null);
+        doc.setRejectedAt(null);
+
         Document saved = documentRepository.save(doc);
-
         saveAuditLog(saved, "APPROVED", manager);
-
         return saved;
     }
 
@@ -63,12 +63,15 @@ public class DocumentService {
                 .orElseThrow(() -> new NotFoundException("Document not found"));
 
         doc.setStatus(DocumentStatus.REJECTED);
-        doc.setApprovedBy(manager);
-        doc.setApprovedAt(LocalDateTime.now());
+        doc.setRejectedBy(manager);
+        doc.setRejectedAt(LocalDateTime.now());
+
+        // Clear approved
+        doc.setApprovedBy(null);
+        doc.setApprovedAt(null);
+
         Document saved = documentRepository.save(doc);
-
         saveAuditLog(saved, "REJECTED", manager);
-
         return saved;
     }
 

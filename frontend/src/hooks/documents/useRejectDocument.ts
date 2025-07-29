@@ -6,12 +6,12 @@ export function useRejectDocument() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       await api.put(`/documents/${id}/reject`)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] })
-      toast.success('Rejected')
+      toast.warning('Rejected')
     },
     onError: () => toast.error('Reject failed'),
   })

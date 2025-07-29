@@ -48,18 +48,16 @@ public class AuthController {
 
             authLogService.log(user.getUsername(), true, request);
 
-            // Створення cookie
+            // Create cookie with JWT
             Cookie cookie = new Cookie("token", token);
             cookie.setHttpOnly(true);
-            cookie.setSecure(true); // якщо HTTPS, інакше false
+            cookie.setSecure(true);
             cookie.setPath("/");
             cookie.setMaxAge((int) (jwtTokenProvider.getExpiration() / 1000));
             cookie.setAttribute("SameSite", "Strict");
 
-            // Додати cookie у відповідь
             response.addCookie(cookie);
 
-            // Повернути тільки юзера, токен не потрібен у JSON
             return ResponseEntity.ok(new UserResponse(user.getUsername(), user.getRole()));
 
         } catch (Exception ex) {

@@ -8,10 +8,10 @@ import { useCreateDocument } from "../../hooks/documents/useCreateDocument";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { CreateDocumentForm } from "../../components/documents/CreateDocumentForm";
-import { DocumentCard } from "../../components/documents/DocumentCard";
 
-import type { Document } from "../../types/Document";
 import type { CreateDocumentInput } from "../../types/Document";
+
+import { DocumentList } from "../../components/documents/DocumentList";
 
 export const HomePage = () => {
   const navigate = useNavigate();
@@ -50,39 +50,37 @@ export const HomePage = () => {
   return (
     <div className="min-h-screen p-8 bg-gray-900 text-white">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Documents</h1>
-        <span
-          className={`text-sm px-3 py-1 rounded-full font-medium ${
-            isManager ? "bg-yellow-600" : "bg-gray-600"
-          }`}
-        >
-          {profile?.role}
-        </span>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <h1 className="text-3xl font-bold">Documents Approve</h1>
 
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 transition"
-        >
-          Logout
-        </button>
+        <div className="flex items-center gap-3 ml-auto">
+          <span
+            className={`text-sm px-3 py-2 rounded-full font-medium ${
+              isManager ? "bg-yellow-600" : "bg-gray-600"
+            }`}
+          >
+            {profile?.role} – {profile?.username}
+          </span>
+
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 transition"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Create Form */}
       <CreateDocumentForm onCreate={handleCreate} />
 
-      {/* Document List */}
-      <div className="space-y-6">
-        {documents.map((doc: Document) => (
-          <DocumentCard
-            key={doc.id}
-            doc={doc}
-            onApprove={approve.mutate}
-            onReject={reject.mutate}
-            isManager={isManager}
-          />
-        ))}
-      </div>
+      {/* Create Document List */}
+      <DocumentList
+        documents={documents}
+        onApprove={approve.mutate}
+        onReject={reject.mutate}
+        isManager={isManager}
+      />
     </div>
   );
 };

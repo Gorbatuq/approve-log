@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { useLogin } from "../hooks/auth/useLogin";
-import { useRegister } from "../hooks/auth/useRegister";
+import { useLogin } from "../../hooks/auth/useLogin";
+import { useRegister } from "../../hooks/auth/useRegister";
 
 import { z } from "zod";
 import { useForm } from "react-hook-form";

@@ -7,6 +7,7 @@ export function useDocuments() {
     queryKey: ['documents'],
     queryFn: async () => {
       const { data } = await api.get('/documents')
+      console.log(data)
       return data
     },
     staleTime: 30_000,

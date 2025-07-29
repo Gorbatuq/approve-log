@@ -1,11 +1,11 @@
-import { ViewAudit } from "../ViewAudit";
+import { ViewAudit } from "./ViewAudit";
 import type { Document } from "../../types/Document";
 
 interface DocumentCardProps {
   doc: Document;
   isManager: boolean;
-  onApprove: (id: string) => void;
-  onReject: (id: string) => void;
+  onApprove: (id: number) => void;
+  onReject: (id: number) => void;
 }
 
 export const DocumentCard = ({
@@ -24,15 +24,23 @@ export const DocumentCard = ({
         Created by: {doc.createdBy.username}
       </p>
 
-      {doc.approvedBy && (
+      {doc.status === "REJECTED" && doc.rejectedAt && (
+        <p className="text-sm text-red-400">
+          Rejected by: {doc.rejectedBy?.username} at{" "}
+          {new Date(doc.rejectedAt).toLocaleString()}
+        </p>
+      )}
+
+      {doc.status === "APPROVED" && doc.approvedAt && (
         <p className="text-sm text-green-400">
-          Approved by: {doc.approvedBy.username} at {doc.approvedAt}
+          Approved by: {doc.approvedBy?.username} at{" "}
+          {new Date(doc.approvedAt).toLocaleString()}
         </p>
       )}
 
       <ViewAudit documentId={doc.id} />
 
-      {isManager && doc.status === "PENDING" && (
+      {isManager && (
         <div className="mt-4 space-x-2">
           <button
             onClick={() => onApprove(doc.id)}

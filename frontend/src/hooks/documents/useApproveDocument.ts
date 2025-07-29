@@ -6,7 +6,7 @@ export function useApproveDocument() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       await api.put(`/documents/${id}/approve`)
     },
     onSuccess: () => {
