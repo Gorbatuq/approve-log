@@ -49,10 +49,7 @@ public class SecurityConfig {
                 HttpServletResponse response,
                 FilterChain filterChain) throws ServletException, IOException {
             String path = request.getRequestURI();
-            System.out.println("[JWT Filter] Filtering request: " + path);
-
-            if (path.startsWith("/api/auth")) {
-                System.out.println("[JWT Filter] Skipping for public endpoint: " + path);
+            if (path.startsWith("/api/auth/login") || path.startsWith("/api/auth/register")) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -66,7 +63,7 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(List.of("http://localhost:5173"));
+                    config.setAllowedOriginPatterns(List.of("http://localhost:5173"));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     config.setAllowedHeaders(List.of("*"));
                     config.setAllowCredentials(true);
@@ -75,7 +72,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(new LoggingJwtTokenFilter(jwtTokenProvider),
                         UsernamePasswordAuthenticationFilter.class);

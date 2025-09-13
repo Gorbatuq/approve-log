@@ -18,30 +18,60 @@ export function useCreateDocument() {
   })
 }
 
+export const useDeleteDocument = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: number) => {
+      console.log("Deleting ID:", id)
+      await api.delete(`/documents/${id}`)
+
+    },
+    onSuccess: () => {
+      toast.success('Document deleted')
+      queryClient.invalidateQueries({ queryKey: ['documents'] })
+    },
+    onError: () => console.error('Failed to del'),
+  })
+}
+
+export const useUpdateDocument = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: { title: string; content: string } }) => {
+      const res = await api.put(`/documents/${id}`, data)
+      return res.data
+    },
+    onSuccess: () => {
+      toast.success('Document updated')
+      queryClient.invalidateQueries({ queryKey: ['documents'] })
+    },
+  })
+}
+
 export function useApproveDocument() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       await api.put(`/documents/${id}/approve`)
     },
     onSuccess: () => {
       toast.success('Approved')
       queryClient.invalidateQueries({ queryKey: ['documents'] })
     },
-    onError: () => toast.error('Failed to approve')
+    onError: () => toast.error('Failed to approve'),
   })
 }
 
 export function useRejectDocument() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: number) => {
       await api.put(`/documents/${id}/reject`)
     },
     onSuccess: () => {
       toast.success('Rejected')
       queryClient.invalidateQueries({ queryKey: ['documents'] })
     },
-    onError: () => toast.error('Failed to reject')
+    onError: () => toast.error('Failed to reject'),
   })
 }

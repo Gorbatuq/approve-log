@@ -7,7 +7,7 @@ export function useAudit(documentId: number) {
     queryKey: ['audit', documentId],
     queryFn: async () => {
       const { data } = await api.get(`/documents/${documentId}/audit`)
-      return data
+      return data.auditLogs 
     },
   })
 }

@@ -1,5 +1,7 @@
 package com.approval.controller;
 
+import org.springframework.security.core.Authentication;
+
 import com.approval.dto.AuthRequest;
 import com.approval.dto.UserResponse;
 import com.approval.exception.NotFoundException;
@@ -48,20 +50,19 @@ public class AuthController {
 
             authLogService.log(user.getUsername(), true, request);
 
-            // Create cookie with JWT
+            // Cookie for local
             Cookie cookie = new Cookie("token", token);
             cookie.setHttpOnly(true);
-            cookie.setSecure(true);
+            cookie.setSecure(false); // ← HTTPS off
             cookie.setPath("/");
+            cookie.setAttribute("SameSite", "None");
             cookie.setMaxAge((int) (jwtTokenProvider.getExpiration() / 1000));
-            cookie.setAttribute("SameSite", "Strict");
 
             response.addCookie(cookie);
 
-            return ResponseEntity.ok(new UserResponse(user.getUsername(), user.getRole()));
+            return ResponseEntity.ok(new UserResponse(user.getId(), user.getUsername(), user.getRole()));
 
         } catch (Exception ex) {
-
             authLogService.log(requestBody.getUsername(), false, request);
             try {
                 Thread.sleep(1000);
@@ -96,7 +97,7 @@ public class AuthController {
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setMaxAge(0);
-        cookie.setAttribute("SameSite", "Strict");
+        cookie.setAttribute("SameSite", "None");
         response.addCookie(cookie);
 
         return ResponseEntity.ok("Logged out");
@@ -104,26 +105,16 @@ public class AuthController {
 
     // ------------------------- PROFILE --------------------------------
     @GetMapping("/profile")
-    public ResponseEntity<?> profile(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return ResponseEntity.status(401).body("No cookies");
+    public ResponseEntity<?> profile(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("Unauthorized");
         }
-        String token = null;
-        for (Cookie cookie : cookies) {
-            if ("token".equals(cookie.getName())) {
-                token = cookie.getValue();
-                break;
-            }
-        }
-        if (token == null || !jwtTokenProvider.validateToken(token)) {
-            return ResponseEntity.status(401).body("Invalid or missing token");
-        }
-        String username = jwtTokenProvider.getUsername(token);
+
+        String username = authentication.getName();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
-        return ResponseEntity.ok(new UserResponse(user.getUsername(), user.getRole()));
+        return ResponseEntity.ok(new UserResponse(user.getId(), user.getUsername(), user.getRole()));
     }
 
 }

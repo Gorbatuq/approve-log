@@ -7,6 +7,7 @@ type Props = {
   documents: Document[];
   onApprove: (id: number) => void;
   onReject: (id: number) => void;
+  onDelete: (id: number) => void;
   isManager: boolean;
 };
 
@@ -14,6 +15,7 @@ export const DocumentList = ({
   documents,
   onApprove,
   onReject,
+  onDelete,
   isManager,
 }: Props) => {
   const [statusFilter, setStatusFilter] = useState<
@@ -29,9 +31,12 @@ export const DocumentList = ({
 
   const filteredDocs = sortedDocs
     .filter((doc) => statusFilter === "ALL" || doc.status === statusFilter)
-    .filter((doc) =>
-      doc.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
-    );
+    .filter((doc) => {
+      if (!debouncedSearchTerm) return true;
+      return doc.title
+        ?.toLowerCase()
+        .includes(debouncedSearchTerm.toLowerCase());
+    });
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedDocs = filteredDocs.slice(
@@ -85,6 +90,7 @@ export const DocumentList = ({
             key={doc.id}
             doc={doc}
             onApprove={onApprove}
+            onDelete={onDelete}
             onReject={onReject}
             isManager={isManager}
           />

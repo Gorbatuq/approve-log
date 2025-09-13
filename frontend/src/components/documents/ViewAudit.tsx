@@ -17,7 +17,7 @@ export const ViewAudit = ({ documentId }: { documentId: number }) => {
               {new Date(log.timestamp).toLocaleString()}
             </span>{" "}
             -<span className="ml-2 font-bold">{log.action}</span> by
-            <span className="ml-1 text-blue-300">{log.user.username}</span>
+            <span className="ml-1 text-blue-300">{log.username}</span>
           </div>
         ))}
       </div>

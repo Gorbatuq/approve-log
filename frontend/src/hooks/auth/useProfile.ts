@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '../../api/api'
 
 type UserResponse = {
+  id: number;
   username: string
   role: 'USER' | 'MANAGER'
 }

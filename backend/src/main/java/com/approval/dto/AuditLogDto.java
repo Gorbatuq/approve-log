@@ -1,13 +1,17 @@
 package com.approval.dto;
 
-import com.approval.model.Role;
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 @AllArgsConstructor
-public class UserResponse {
+public class AuditLogDto {
     private Long id;
+    private String action;
     private String username;
-    private Role role;
+    private LocalDateTime timestamp;
 }

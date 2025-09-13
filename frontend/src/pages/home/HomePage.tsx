@@ -5,6 +5,7 @@ import { useLogout } from "../../hooks/auth/useLogout";
 import { useApproveDocument } from "../../hooks/documents/useApproveDocument";
 import { useRejectDocument } from "../../hooks/documents/useRejectDocument";
 import { useCreateDocument } from "../../hooks/documents/useCreateDocument";
+import { useDeleteDocument } from "../../hooks/documents/useDocumentMutations";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { CreateDocumentForm } from "../../components/documents/CreateDocumentForm";
@@ -12,6 +13,7 @@ import { CreateDocumentForm } from "../../components/documents/CreateDocumentFor
 import type { CreateDocumentInput } from "../../types/Document";
 
 import { DocumentList } from "../../components/documents/DocumentList";
+import { StatsWidget } from "../../components/documents/StatsWidget";
 
 export const HomePage = () => {
   const navigate = useNavigate();
@@ -22,6 +24,7 @@ export const HomePage = () => {
 
   const { data: documents, isLoading, isError, error } = useDocuments();
   const create = useCreateDocument();
+  const remove = useDeleteDocument();
   const approve = useApproveDocument();
   const reject = useRejectDocument();
   const logout = useLogout();
@@ -70,6 +73,7 @@ export const HomePage = () => {
           </button>
         </div>
       </div>
+      {isManager && <StatsWidget />}
 
       {/* Create Form */}
       <CreateDocumentForm onCreate={handleCreate} />
@@ -79,6 +83,7 @@ export const HomePage = () => {
         documents={documents}
         onApprove={approve.mutate}
         onReject={reject.mutate}
+        onDelete={remove.mutate}
         isManager={isManager}
       />
     </div>

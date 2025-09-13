@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
@@ -20,7 +21,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.startsWith("/api/auth");
+        // The filter is NOT limited to login and register
+        return path.equals("/api/auth/login") || path.equals("/api/auth/register");
     }
 
     @Override
@@ -30,16 +32,15 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String token = resolveToken(request);
-        System.out.println("Filtering: " + request.getServletPath());
-        System.out.println("Token: " + token);
-        System.out.println("Valid: " + jwtTokenProvider.validateToken(token));
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
-            System.out.println("Token valid");
+            System.out.println("Valid token, setting authentication for user: "
+                    + jwtTokenProvider.getUsername(token));
+
             SecurityContextHolder.getContext().setAuthentication(
                     jwtTokenProvider.getAuthentication(token));
         } else {
-            System.out.println(" Token invalid or missing");
+            System.out.println("Token invalid or missing for path: " + request.getRequestURI());
         }
 
         filterChain.doFilter(request, response);
@@ -47,11 +48,15 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private String resolveToken(HttpServletRequest request) {
         if (request.getCookies() != null) {
+            System.out.println("Cookies: " + Arrays.toString(request.getCookies()));
             for (Cookie cookie : request.getCookies()) {
                 if ("token".equals(cookie.getName())) {
+                    System.out.println("Found token cookie: " + cookie.getValue());
                     return cookie.getValue();
                 }
             }
+        } else {
+            System.out.println("No cookies in request");
         }
         return null;
     }
